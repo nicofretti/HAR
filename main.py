@@ -32,13 +32,24 @@ if __name__ == "__main__":
     # 5. Plot the cumulative sum of the eigenvalues
     plts.cumulative_eigenvalues(norm_eig_vals)
     # %%
-    # [task] Apply PCA to the dataset
+    # [task] Apply PCA to the dataset and visualize the results
     #
     n_eigenvectors = 100
     sorted_eig_vals = np.argsort(eig_vals)[::-1]
     p_matrix = eig_vecs[sorted_eig_vals[:n_eigenvectors]]
-    p_data = np.matmul(x_train-mu, p_matrix.T)
+    p_data = np.matmul(x_train - mu, p_matrix.T)
     # Plot the first three principal components
-    plts.plot_pca(p_data, y_train)
+    plts.scatter_pca(p_data, y_train)
+    # %%
+    # [task] LDA to the p_data
+    #
+    # 1. Grouping every feature by activity
+    k = len(activities["index"])
+    c_data = [[]] * k
+    for i in range(k):
+        c_data[i] = p_data[train["Activity"] == activities["index"][i]]
+    # 2. Compute the mean for each activity and store the cardinality of each activity
+    mu_c = [np.mean(c_data[i], axis=0) for i in range(k)]
+    shape_c = [c_data[i].shape[0] for i in range(k)]
 
 
