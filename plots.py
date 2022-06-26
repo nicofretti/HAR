@@ -32,7 +32,7 @@ def cumulative_eigenvalues(eigenvalues):
     plt.show()
 
 
-def scatter_pca(p_data, y_train):
+def scatter_with_labels(p_data, y_train):
     # Compute color for each activity
     colors = [activities[i] for i in y_train]
     # Draw a scatter plot to see the first three principal components
@@ -44,6 +44,5 @@ def scatter_pca(p_data, y_train):
     ax.set_xlabel('f_1')
     ax.set_ylabel('f_2')
     ax.set_zlabel('f_3')
-    print(list(activities.keys()))
     ax.legend(list(activities.keys()), loc='upper right')
     plt.show()
