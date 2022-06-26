@@ -83,14 +83,12 @@ if __name__ == "__main__":
     plts.scatter_with_labels(p_data, y_train)
     # p_data = p_data.astype(np.float64)
     # %%
-    # [task] Use K-means to cluster the data
+    # [task] Use K-MEANS to cluster the data
     #
     from random import uniform
     from math import dist
 
-    n_clusters = k
-    max_iter = 6;
-    iteration = 0;
+    n_clusters = k;max_iter = 6;iteration = 0;
     prev_centroids = None
     p_data = p_data.astype(np.float64)
     # 1. Initialize the centroids
@@ -101,7 +99,6 @@ if __name__ == "__main__":
         centroids.append(
             np.random.uniform(low=min, high=max, size=p_data.shape[1])
         )
-    centroids = [uniform(np.min(p_data), np.max(p_data)) for i in range(n_clusters)]
     datas = [list(x)[1:] for x in p_data.itertuples()]
     while np.not_equal(centroids, prev_centroids).any() and iteration < max_iter:
         # 2. Sort point and assign to the nearest centroid
@@ -118,12 +115,10 @@ if __name__ == "__main__":
         print("K-means status: {}/{}".format(iteration, max_iter))
     print("K-mean done")
     # %% Prediction after training
-    kmeans = KMeans(n_clusters=k).fit(p_data.astype(np.float64))
-    y_pred = kmeans.labels_
-    #y_pred = np.empty((0))
-    #for x in datas:
-    #    dists = [dist(x, centroids[i]) for i in range(n_clusters)]
-    #    y_pred = np.append(y_pred, dists.index(np.min(dists)))
+    y_pred = np.empty((0))
+    for x in datas:
+        dists = [dist(x, centroids[i]) for i in range(n_clusters)]
+        y_pred = np.append(y_pred, dists.index(np.min(dists)))
     # Associate the labels to the clusters
     labels = {
         'LAYING': 0,
@@ -133,18 +128,22 @@ if __name__ == "__main__":
         'WALKING_DOWNSTAIRS': 4,
         'WALKING_UPSTAIRS': 5
     }
+
     y_train_id = [labels[x] for x in y_train]
     # Test the shifting of the labels to find the best shift
     fit = np.zeros(k)
     for i in range(k):
         # Find how much labels are equals with shift of i
-        fit[i] = np.sum(np.equal(y_train_id, (y_pred + i) % k))
+        fit[i] = np.count_nonzero(np.equal((y_pred+i)%k,y_train_id))
 
     # %%
     from sklearn.metrics import confusion_matrix
 
-    y_pred = (y_pred + np.argmax(fit)) % k
-    plt.figure(figsize=(10, 7))
-    sns.heatmap(confusion_matrix(y_train_id, y_pred), fmt=".3g", annot=True)
-    plt.title("Confusion Matrix")
-    plt.show()
+    y_pred = (y_pred + 2) % k
+    labels_name = ['LAYING', 'SITTING', 'STANDING', 'WALKING', 'WALKING_DOWNSTAIRS', 'WALKING_UPSTAIRS']
+    y_pred = y_pred.astype(np.int64)
+    y_pred_labels = [labels_name[x] for x in y_pred]
+    p_data = p_data.astype(np.float64)
+    plts.scatter_with_labels(p_data, y_train)
+    plts.scatter_with_labels(p_data, y_pred_labels)
+
