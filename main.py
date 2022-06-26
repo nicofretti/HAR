@@ -99,4 +99,25 @@ if __name__ == "__main__":
     ax.set_zlabel('f_3')
     plt.show()
 
+    # %%
+    # [task] Show the confusion matrix
+    #
+    from sklearn.metrics import confusion_matrix
+    y_pred = kmeans.predict(p_data.astype(np.float64))
+    y_check = y_train.replace({
+        "LAYING": 0,
+        "SITTING": 1,
+        "STANDING": 2,
+        "WALKING": 3,
+        "WALKING_DOWNSTAIRS": 4,
+        "WALKING_UPSTAIRS": 5
+    })
+    plt.figure(figsize=(10, 7))
+    sns.heatmap(confusion_matrix(y_check, y_pred), fmt=".3g", annot=True)
+    plt.title("Confusion Matrix")
+    plt.show()
+
+
+
+
 
