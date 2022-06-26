@@ -21,6 +21,7 @@ if __name__ == "__main__":
         "index": activities.index,
         "count": activities.values
     }
+
     plts.activities_distribution(activities)
     x_train = train.drop(["subject", "Activity"], axis=1)
     x_train.astype(np.float64)
@@ -67,9 +68,8 @@ if __name__ == "__main__":
     sb = np.zeros((n_eigenvectors, n_eigenvectors), dtype=np.complex128)
     mu = np.mean(p_data, axis=0)
     for i in range(k):
-        sw += np.dot((c_data[i]-mu_c[i]).T, c_data[i]-mu_c[i])/shape_c[i]
-        sb += np.dot(mu_c[i]-mu, (mu_c[i]-mu).T)
-
+        sw += np.dot((c_data[i] - mu_c[i]).T, c_data[i] - mu_c[i]) / shape_c[i]
+        sb += np.dot(mu_c[i] - mu, (mu_c[i] - mu).T)
 
     # %%
     # [task] Project the data to the new space formed by K-1 eigenvectors
@@ -77,47 +77,74 @@ if __name__ == "__main__":
     eig_vals, eig_vecs = np.linalg.eig(np.linalg.inv(sw) * sb)
     eig_vecs = eig_vecs.T
     sorted_eig_vals = np.argsort(eig_vals)[::-1]
-    p_matrix = eig_vecs[sorted_eig_vals[:k-1]]
+    p_matrix = eig_vecs[sorted_eig_vals[:k - 1]]
     p_data = np.matmul(p_data - mu, p_matrix.T)
     # Plot the first three principal components
     plts.scatter_with_labels(p_data, y_train)
-    #p_data = p_data.astype(np.float64)
+    # p_data = p_data.astype(np.float64)
     # %%
-    # [task] Use the classifier to predict the activities
+    # [task] Use K-means to cluster the data
     #
+    from random import uniform
+    from math import dist
+
+    n_clusters = k
+    max_iter = 6;
+    iteration = 0;
+    prev_centroids = None
+    p_data = p_data.astype(np.float64)
+    # 1. Initialize the centroids
+    min = np.min(p_data, axis=0)
+    max = np.max(p_data, axis=0)
+    centroids = []
+    for _ in range(n_clusters):
+        centroids.append(
+            np.random.uniform(low=min, high=max, size=p_data.shape[1])
+        )
+    centroids = [uniform(np.min(p_data), np.max(p_data)) for i in range(n_clusters)]
+    datas = [list(x)[1:] for x in p_data.itertuples()]
+    while np.not_equal(centroids, prev_centroids).any() and iteration < max_iter:
+        # 2. Sort point and assign to the nearest centroid
+        prev_centroids = centroids
+        sorted_points = [[] for _ in range(n_clusters)]
+        for x in datas:
+            dists = [dist(x, centroids[i]) for i in range(n_clusters)]
+            sorted_points[dists.index(np.min(dists))].append(x)
+            centroids = [np.mean(sorted_points[i], axis=0) for i in range(n_clusters)]
+            for i, centroid in enumerate(centroids):
+                if (np.isnan(centroid).any()):
+                    centroids[i] = prev_centroids[i]
+        iteration += 1
+        print("K-means status: {}/{}".format(iteration, max_iter))
+    print("K-mean done")
+    # %% Prediction after training
     kmeans = KMeans(n_clusters=k).fit(p_data.astype(np.float64))
-    #%%
-    y_pred_6 = kmeans.labels_
-    # Draw a scatter plot to see the first three principal components
-    # Draw scatter in 3d
-    fig = plt.figure()
-    ax = Axes3D(fig)
-    ax.scatter(p_data.iloc[:, 0], p_data.iloc[:, 1], p_data.iloc[:, 2], c=y_pred_6)
-    # Adding legend and axis labels
-    ax.set_xlabel('f_1')
-    ax.set_ylabel('f_2')
-    ax.set_zlabel('f_3')
-    plt.show()
+    y_pred = kmeans.labels_
+    #y_pred = np.empty((0))
+    #for x in datas:
+    #    dists = [dist(x, centroids[i]) for i in range(n_clusters)]
+    #    y_pred = np.append(y_pred, dists.index(np.min(dists)))
+    # Associate the labels to the clusters
+    labels = {
+        'LAYING': 0,
+        'SITTING': 1,
+        'STANDING': 2,
+        'WALKING': 3,
+        'WALKING_DOWNSTAIRS': 4,
+        'WALKING_UPSTAIRS': 5
+    }
+    y_train_id = [labels[x] for x in y_train]
+    # Test the shifting of the labels to find the best shift
+    fit = np.zeros(k)
+    for i in range(k):
+        # Find how much labels are equals with shift of i
+        fit[i] = np.sum(np.equal(y_train_id, (y_pred + i) % k))
 
     # %%
-    # [task] Show the confusion matrix
-    #
     from sklearn.metrics import confusion_matrix
-    y_pred = kmeans.predict(p_data.astype(np.float64))
-    y_check = y_train.replace({
-        "LAYING": 0,
-        "SITTING": 1,
-        "STANDING": 2,
-        "WALKING": 3,
-        "WALKING_DOWNSTAIRS": 4,
-        "WALKING_UPSTAIRS": 5
-    })
+
+    y_pred = (y_pred + np.argmax(fit)) % k
     plt.figure(figsize=(10, 7))
-    sns.heatmap(confusion_matrix(y_check, y_pred), fmt=".3g", annot=True)
+    sns.heatmap(confusion_matrix(y_train_id, y_pred), fmt=".3g", annot=True)
     plt.title("Confusion Matrix")
     plt.show()
-
-
-
-
-
