@@ -37,35 +37,23 @@ if __name__ == "__main__":
     w, h = train.shape
     n_eigenvectors = 100
     x_train = x_train.astype(np.float64)
-    p_data = tools.PCA(x_train, n_eigenvectors)
+    pca_proj = tools.PCA(x_train, n_eigenvectors)
+    pca_data = np.matmul(x_train, pca_proj)
     # Plot the first three principal components
-    plts.scatter_with_labels(p_data, y_train, labels.keys())
+    plts.scatter_with_labels(pca_data, y_train, labels.keys())
     # %%
-    import tools
-    lda_data = tools.LDA(p_data, y_train, n_classes=6)
+    lda_proj = tools.LDA(pca_data, y_train, n_classes=6)
+    lda_data = np.matmul(pca_data, lda_proj)
     plts.scatter_with_labels(lda_data, y_train, labels.keys())
     # p_data = p_data.astype(np.float64)
     # %%
     # [task] Use k-nearest neighbors to predict the activity of the test dataset
     #
     # 1. Create a KNN classifier
+    lda_data = lda_data.astype(np.float64)
     knn = KNeighborsClassifier(n_neighbors=6)
     # 2. Fit the classifier to the training data
     # Cast p_data from complex to float
-    lda_data = lda_data.astype(np.float64)
     knn.fit(lda_data, y_train)
-    # 3. Load the test data
-    test = pd.read_csv("data/test.csv")
-    x_test = test.drop(["subject", "Activity"], axis=1)
-
-    x_test = tools.PCA(x_test, n_eigenvectors)
-    x_test = tools.LDA(x_test, y_train, n_classes=6)
-    y_test = test.Activity
-    y_test = y_test.map(labels)
-    x_test = x_test.astype(np.float64)
-    # 4. Predict the activity of the test data
-    y_pred = knn.predict(x_test)
-    # 5. Print the coverage of the classifier
-    print("Coverage:", np.mean(y_pred == y_test))
-
+    print(knn.score(lda_data, y_train))
 
