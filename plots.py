@@ -28,7 +28,7 @@ def scatter_with_labels(p_data, y_train, labels):
     colors = [activities_colors[i] for i in y_train]
     fig = plt.figure()
     ax = Axes3D(fig)
-    ax.scatter(p_data.iloc[:, 0], p_data.iloc[:, 1], p_data.iloc[:, 2], c=colors)
+    ax.scatter(p_data[:, 0], p_data[:, 1], p_data[:, 2], c=colors)
     # Adding legend and axis labels
     ax.set_xlabel('f_1')
     ax.set_ylabel('f_2')
