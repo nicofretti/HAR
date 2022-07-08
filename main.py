@@ -34,7 +34,7 @@ if __name__ == "__main__":
     # %%
     # [task] Apply PCA to the data and visualize the results
     #
-    n_eigenvectors = 150
+    n_eigenvectors = 154
     pca_proj = tools.PCA(x_train, n_eigenvectors)
     pca_data = np.matmul(x_train, pca_proj.T)
     # Plot the first three principal components
@@ -43,7 +43,7 @@ if __name__ == "__main__":
     # %%
     # [task] Apply LDA to the data and visualize the results
     #
-    lda_proj = tools.LDA(pca_data, y_train, 6)
+    lda_proj = tools.LDA(pca_data, y_train, n_classes=6)
     lda_data = np.matmul(pca_data, lda_proj.T)
     plots.scatter_with_labels(lda_data, y_train, list(labels.keys()))
 
@@ -51,10 +51,11 @@ if __name__ == "__main__":
     # [task] Use k-nearest neighbors to predict the activity of the test dataset
     #
     # 1. Create a KNN classifier
-    knn = KNeighborsClassifier(n_neighbors=6)
+    knn = KNeighborsClassifier(n_neighbors=20)
 
     # 2. Fit the classifier to the training data
     knn.fit(lda_data, y_train)
+
     # %%
     # [task] Use the classifier to predict the activity of the test dataset
     test = pd.read_csv("data/test.csv")

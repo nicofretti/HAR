@@ -19,6 +19,10 @@ def cumulative_eigenvalues(eigenvalues):
     plt.bar(range(1, len(eigenvalues) + 1), eigenvalues, alpha=0.5, align='center',
             label='Individual explained variance')
     plt.step(range(1, len(cum_eigenvalues) + 1), cum_eigenvalues, where='mid', label='Cumulative explained variance')
+    # Line on y=.99
+    plt.plot([1, len(cum_eigenvalues) + 1], [0.99, 0.99], 'r--', label='99% Coverage')
+    # Line on x=154
+    plt.plot([154, 154], [0, 0.99], 'r--', label='154 Eigenvectors')
     plt.ylabel('Explained variance ratio')
     plt.xlabel('Principal components')
     plt.legend(loc='best')
