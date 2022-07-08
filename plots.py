@@ -1,9 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import matplotlib.patches as mpatches
 from mpl_toolkits.mplot3d import Axes3D
 
 activities_colors = sns.color_palette('pastel')[0:6]
+
 
 def activities_distribution(activities):
     # Draw a pie chart to see the distribution of activities
@@ -33,5 +35,17 @@ def scatter_with_labels(p_data, y_train, labels):
     ax.set_xlabel('f_1')
     ax.set_ylabel('f_2')
     ax.set_zlabel('f_3')
-    ax.legend(labels, loc='upper right')
+    # Adding legend
+    handles = []
+    for i in range(len(labels)):
+        handles.append(mpatches.Patch(color=activities_colors[i], label=labels[i]))
+    plt.legend(
+        handles=handles,
+        loc='lower left',
+    )
+    plt.show()
+
+
+def confusion_matrix(matrix):
+    sns.heatmap(matrix, annot=True, fmt='d', cmap='Blues')
     plt.show()
